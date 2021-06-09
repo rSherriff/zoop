@@ -1,12 +1,16 @@
 
 
-from os import spawnl
 import random
-from entities.target import Target
+from os import spawnl
 
-from utils.direction import  Direction
+from playsound import playsound
+
+from actions.actions import GameOver, UpdateScore
+from application_path import get_app_path
+from entities.target import Target
 from utils.color import get_random_color
-from actions.actions import UpdateScore, GameOver
+from utils.direction import Direction
+
 
 class TargetType:
     def __init__(self, char, color):
@@ -105,6 +109,7 @@ class TargetManager:
             for entity in entities_to_move:
                 entity.move(1,0)
 
+        playsound(get_app_path() + "/sounds/beep.wav", False)
         self.engine.entities.append(Target(self.engine, spawn.x, spawn.y, type.char, type.color))
 
     def place_target(self, color, point):

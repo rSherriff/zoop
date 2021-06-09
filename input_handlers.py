@@ -22,7 +22,7 @@ class EventHandler(tcod.event.EventDispatch[Action]):
             self.dispatch(event)
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
-        raise SystemExit()
+        self.engine.quit()
 
     def on_render(self, root_console: tcod.Console) -> None:
         self.engine.render(root_console)

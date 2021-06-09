@@ -1,5 +1,4 @@
 from __future__ import annotations
-from entities.temptity import Temptity
 
 import time
 from enum import Enum, auto
@@ -45,9 +44,14 @@ class Engine:
 
         self.setup_effects()
         self.setup_sections()
-        self.setup_game()
 
-        self.state = GameState.IN_GAME
+        self.music_timer = Timer(77, self.play_music)
+        self.play_music()
+
+        self.entities = []
+        self.time_since_last_tick = -2
+
+        self.state = GameState.MENU
         
 
     def render(self, root_console: Console) -> None:
@@ -75,16 +79,19 @@ class Engine:
         for _, section in self.get_active_sections():
             section.update()
 
+
         self.delta_time.update_delta_time()
 
-        self.time_since_last_tick += self.get_delta_time()
+        if self.state == GameState.IN_GAME:
+            self.time_since_last_tick += self.get_delta_time()
 
-        if self.time_since_last_tick > self.tick_length and self.state == GameState.IN_GAME:
-            self.target_manager.spawn_target()
-            self.time_since_last_tick = 0
+            self.tick_length -= 0.0002
+            if self.time_since_last_tick > self.tick_length and self.state == GameState.IN_GAME:
+                self.target_manager.spawn_target()
+                self.time_since_last_tick = 0
 
-        for entity in self.entities:
-            entity.update()
+            for entity in self.entities:
+                entity.update()
 
     def handle_events(self, context: tcod.context.Context):
         self.event_handler.handle_events(
@@ -92,16 +99,15 @@ class Engine:
 
     def setup_game(self):
         self.player = Player(self, 7,4)
-        self.entities = []
+        self.entities.clear()
         self.entities.append(self.player)
 
-        self.tick_length = 1
-        self.time_since_last_tick = -2
         self.score = 0
         self.last_score = 0
         self.target_manager.setup_game()
 
-       
+        self.tick_length = 2
+
 
     def setup_effects(self): 
         self.full_screen_effect = MeltWipeEffect(self, 0, 0, self.screen_width, self.screen_height, MeltWipeEffectType.RANDOM, 100)
@@ -126,7 +132,6 @@ class Engine:
             return self.completion_sections.items()
 
     def close_menu(self):
-        print("Closing menu!")
         self.state = GameState.IN_GAME
         self.setup_game()
         self.full_screen_effect.start()
@@ -137,6 +142,7 @@ class Engine:
 
     def game_over(self):
         self.state = GameState.GAME_OVER
+        playsound(get_app_path() + "/sounds/game_over.wav", False)
         Timer(3,self.open_menu).start()
 
     def complete_game(self):
@@ -162,5 +168,15 @@ class Engine:
 
     def spawn_temp_entity(self, point, char, colour, lifespan):
         self.entities.append(Temptity(self, point[0], point[1], char, colour, lifespan))
+
+    def play_music(self):
+        playsound(get_app_path() + "/sounds/music.wav", False)
+        self.music_timer = Timer(77, self.play_music)
+        self.music_timer.start()
+
+    def quit(self):
+        if self.music_timer.is_alive():
+            self.music_timer.cancel()
+        raise SystemExit()
 
 

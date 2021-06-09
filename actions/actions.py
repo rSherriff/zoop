@@ -25,8 +25,8 @@ class Action:
 
 class EscapeAction(Action):
     def perform(self) -> None:
-        raise SystemExit()
-
+        self.engine.quit()
+        
 class CloseMenu(Action):
     def perform(self) -> None:
         self.engine.close_menu()

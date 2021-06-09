@@ -3,8 +3,10 @@ from typing import Tuple
 
 import tcod.event
 from actions.actions import HitTarget, SpawnTempEntity
-from utils.direction import Direction
+from application_path import get_app_path
+from playsound import playsound
 from utils.color import get_random_color
+from utils.direction import Direction
 
 from entities.entity import Entity
 from entities.target import Target
@@ -114,6 +116,7 @@ class Player(Entity):
                 for point in shot_travel_points:
                     SpawnTempEntity(self.engine, point, shot_char, self.color, 0.1).perform()
 
+                playsound(get_app_path() + "/sounds/shot.wav", False)
                 HitTarget(self.engine, [entity.x, entity.y], self.color, target, self.direction).perform()
 
 
